@@ -7,8 +7,6 @@ const {
 
 async function buildTables() {
   try {
-    client.connect();
-
     // drop tables in correct order
     console.log("Starting to drop tables...");
     await client.query(`
@@ -19,6 +17,7 @@ async function buildTables() {
     console.log("Finished dropping tables!");
 
     // build tables in correct order
+    console.log("Starting to build tables...");
     await client.query(`
 
     CREATE TABLE link(
@@ -52,18 +51,19 @@ async function buildTables() {
 async function populateInitialData() {
   try {
     // create useful starting data
+    console.log("running populateInitialData");
     await createLink({
       link: "www.yahoo.com",
       clickCount: "2",
       createDate: "08-03-2020",
-      tags: ["#Search", "#Info"],
+      // tags: ["#Search", "#Info"],
     });
 
     await createLink({
       link: "www.learn.fullstack.com",
       clickCount: "0",
       createDate: "08-03-2020",
-      tags: ["#School", "#Info"],
+      // tags: ["#School", "#Info"],
     });
   } catch (error) {
     console.log("Error creating posts!");
@@ -74,6 +74,8 @@ async function populateInitialData() {
 async function rebuildDB() {
   try {
     client.connect();
+    console.log("rebuildingDB");
+    buildTables();
     populateInitialData();
   } catch (error) {
     console.log("Error during rebuildDB");
@@ -83,8 +85,14 @@ async function rebuildDB() {
 
 async function testDB() {
   try {
-    const test = await console.log("starting");
-    console.log(createLink());
+    console.log("starting");
+    const test = await createLink({
+      link: "www.learn.fullstack.com",
+      clickCount: "0",
+      createDate: "08-03-2020",
+      // tags: ["#School", "#Info"],
+    });
+    console.log("Returning:", test);
   } catch (error) {
     console.log("Error during testDB");
     throw error;
