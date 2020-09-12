@@ -2,39 +2,41 @@
 const {
   client,
   createLink,
+  createTag,
+  getLinks,
+  getTags,
   // other db methods
 } = require("./index");
 
 async function buildTables() {
   try {
-    client.connect();
-
     // drop tables in correct order
     console.log("Starting to drop tables...");
     await client.query(`
-      DROP TABLE IF EXISTS tags;
       DROP TABLE IF EXISTS links;
+      DROP TABLE IF EXISTS tags;
     `);
 
     console.log("Finished dropping tables!");
 
     // build tables in correct order
+    console.log("Starting to build tables...");
     await client.query(`
 
-    CREATE TABLE link(
+    CREATE TABLE tags(
+      id SERIAL PRIMARY KEY,
+      tag varchar(255) UNIQUE NOT NULL
+    );
+
+    CREATE TABLE links(
       id SERIAL PRIMARY KEY,
       link varchar(255) UNIQUE NOT NULL,
       clickCount INTEGER,
-      createDate DATE - format MM-DD-YYYY,
-      tagId varchar(255) REFERENCES tags(id)
-    )
-
-    CREATE TABLE tags (
-      id SERIAL PRIMARY KEY,
-      name varchar(255) UNIQUE NOT NULL
+      createDate DATE,
+      "tagId" INTEGER REFERENCES tags(id)
     );
 
-      
+
   `);
 
     console.log("Finished building tables!");
@@ -44,26 +46,26 @@ async function buildTables() {
   }
 }
 
-// link varchar(255) UNIQUE NOT NULL,
-// clickCount INTEGER,
-// createDate DATE - format MM-DD-YYYY,
-// tagId varchar(255) REFERENCES tags(id)
-
 async function populateInitialData() {
   try {
     // create useful starting data
+    console.log("running populateInitialData");
+    await createTag({
+      tag: "#Info",
+    });
+    
     await createLink({
       link: "www.yahoo.com",
       clickCount: "2",
       createDate: "08-03-2020",
-      tags: ["#Search", "#Info"],
+      tagId: 1,
     });
 
     await createLink({
       link: "www.learn.fullstack.com",
       clickCount: "0",
       createDate: "08-03-2020",
-      tags: ["#School", "#Info"],
+      tagId: 1,
     });
   } catch (error) {
     console.log("Error creating posts!");
@@ -74,7 +76,9 @@ async function populateInitialData() {
 async function rebuildDB() {
   try {
     client.connect();
-    populateInitialData();
+    console.log("rebuildingDB");
+    await buildTables();
+    await populateInitialData();
   } catch (error) {
     console.log("Error during rebuildDB");
     throw error;
@@ -83,8 +87,10 @@ async function rebuildDB() {
 
 async function testDB() {
   try {
-    const test = await console.log("starting");
-    console.log(createLink());
+    console.log("starting");
+    const test = await getLinks();
+    const otherTest = await getTags();
+    console.log("Returning:", test, "Tags:", otherTest);
   } catch (error) {
     console.log("Error during testDB");
     throw error;
@@ -100,3 +106,5 @@ rebuildDB()
 //   .then(populateInitialData)
 //   .catch(console.error)
 //   .finally(() => client.end());
+
+//code change
